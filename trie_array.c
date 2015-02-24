@@ -5,6 +5,7 @@
 typedef struct trie_s {
     unsigned     size;
     const char **strings;
+    unsigned    *orig;
     unsigned    *weight;
     unsigned    *cp;
 } trie_s;
@@ -19,28 +20,31 @@ typedef struct trie_cursor_s {
 void ta_create(trie_s *ta, const char **strings, unsigned size) {
     ta->size = size;
     ta->strings = strings;
-    const char **_strings = malloc(sizeof(const char *) * size);
-    unsigned    *weight = malloc(sizeof(unsigned) * size);
-    unsigned    *cp     = malloc(sizeof(unsigned) * size * 2);
+    unsigned    *orig     = malloc(sizeof(unsigned) * size);
+    unsigned    *weight   = malloc(sizeof(unsigned) * size);
+    unsigned    *cp       = malloc(sizeof(unsigned) * size * 2);
 
     /* use O(n^2) sorting */
     for (unsigned i = 0; i < size; ++ i) {
-        _strings[i] = strings[i];
+        orig[i] = i;
         weight[i] = 1;
     }
 
     for (unsigned i = 0; i < size - 1; ++ i) {
         unsigned min_idx = i;
         for (unsigned j = i + 1; j < size; ++ j) {
-            if (strcmp(_strings[j],
-                       _strings[min_idx]) < 0) {
+            if (strcmp(strings[j],
+                       strings[min_idx]) < 0) {
                 min_idx = j;
             }
         }
         if (min_idx != i) {
-            const char *t = _strings[i];
-            _strings[i] = _strings[min_idx];
-            _strings[min_idx] = t;
+            const char *t = strings[i];
+            strings[i] = strings[min_idx];
+            strings[min_idx] = t;
+            unsigned tt = orig[i];
+            orig[i] = orig[min_idx];
+            orig[min_idx] = tt;
         }
     }
 
@@ -59,7 +63,7 @@ void ta_create(trie_s *ta, const char **strings, unsigned size) {
     /* compute common prefix for base level */
     for (unsigned i = 0; i < size - 1; ++ i) {
         unsigned _cp = 0;
-        while (_strings[i][_cp] == _strings[i + 1][_cp])
+        while (strings[i][_cp] == strings[i + 1][_cp])
             ++ _cp;
         cp[weight[i]] = _cp;
     }
@@ -75,7 +79,8 @@ void ta_create(trie_s *ta, const char **strings, unsigned size) {
         }
     }
     
-    ta->strings = _strings;
+    ta->strings = strings;
+    ta->orig    = orig;
     ta->weight  = weight;
     ta->cp      = cp;
 }
@@ -89,7 +94,8 @@ void ta_traverse_init(trie_s *ta, trie_cursor_s *c) {
 int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
     char _ch = ta->strings[c->idx][c->pos];
     if (_ch == ch) {
-        return ta->strings[c->idx][++ c->pos];
+        ++ c->pos;
+        return ta->strings[c->idx][c->pos] ? 0 : ta->orig[c->idx];
     } else if (_ch < ch) {
         while (1) {
             /* need to move right-ward */
@@ -107,7 +113,8 @@ int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
                 char nx_ch = ta->strings[nx][c->pos];
                 if (nx_ch == ch) {
                     c->idx = nx;
-                    return ta->strings[c->idx][++ c->pos];
+                    ++ c->pos;
+                    return ta->strings[c->idx][c->pos] ? 0 : ta->orig[c->idx];
                 } else if (nx_ch < ch) {
                     c->idx = nx;
                 } else {
