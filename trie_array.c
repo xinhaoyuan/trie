@@ -67,13 +67,15 @@ void ta_create(trie_s *ta, const char **strings, void **values, unsigned size) {
             ++ _cp;
         cp[weight[i]] = _cp;
     }
+    cp[weight[size - 1]] = 0;
 
     unsigned l = 0;
     for (unsigned i = 2; i < size; i <<= 1) {
         ++ l;
-        for (unsigned j = 0; j < size - 1; j += i) {
-            unsigned nx = (j + i < size) ? (j + i) : (size - 1);
+        for (unsigned j = 0; j < size; j += i) {
             cp[weight[j] + l] = cp[weight[j] + l - 1];
+            unsigned nx = j + (i >> 1);
+            if (nx >= size) break;
             if (cp[weight[j] + l] > cp[weight[nx] + l - 1])
                 cp[weight[j] + l] = cp[weight[nx] + l - 1];
         }
