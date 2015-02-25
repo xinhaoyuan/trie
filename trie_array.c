@@ -19,7 +19,6 @@ typedef struct trie_cursor_s {
 
 void ta_create(trie_s *ta, const char **strings, void **values, unsigned size) {
     unsigned *weight   = malloc(sizeof(unsigned) * size);
-    unsigned *cp       = malloc(sizeof(unsigned) * size * 2);
 
     ta->size    = size;
     ta->strings = strings;
@@ -60,6 +59,8 @@ void ta_create(trie_s *ta, const char **strings, void **values, unsigned size) {
         weight[i] = o;
     }
 
+    unsigned *cp       = malloc(sizeof(unsigned) * sum);
+    
     /* compute common prefix for base level */
     for (unsigned i = 0; i < size - 1; ++ i) {
         unsigned _cp = 0;
