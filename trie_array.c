@@ -103,6 +103,10 @@ int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
             /* need to move right-ward */
             /* failed if cannot move further */
             if (c->idx == ta->size - 1) return -1;
+
+            unsigned nx = c->idx + (1 << c->level);
+            if (nx >= ta->size) nx = ta->size - 1;
+            
             if (ta->cp[ta->weight[c->idx] + c->level] < c->pos) {
                 /* imply new_string is bigger */
                 if (c->level == 0)
@@ -110,8 +114,6 @@ int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
                 else -- c->level;
             } else {
                 /* test next node in the level */
-                unsigned nx = c->idx + (1 << c->level);
-                if (nx >= ta->size) nx = ta->size - 1;
                 char nx_ch = ta->strings[nx][c->pos];
                 if (nx_ch == ch) {
                     c->idx = nx;
@@ -127,8 +129,34 @@ int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
             }
         }
     } else {
-        /* should not happen */
-        return -1;
+        while (1) {
+            /* need to move left-ward */
+            /* failed if cannot move further */
+            if (c->idx == 0) return -1;
+
+            unsigned nx = c->idx - (1 << c->level);
+            
+            if (ta->cp[ta->weight[nx] + c->level] < c->pos) {
+                /* imply new_string is smaller */
+                if (c->level == 0)
+                    return -1;
+                else -- c->level;
+            } else {
+                /* test next node in the level */
+                char nx_ch = ta->strings[nx][c->pos];
+                if (nx_ch == ch) {
+                    c->idx = nx;
+                    ++ c->pos;
+                    return ta->strings[c->idx][c->pos];
+                } else if (nx_ch > ch) {
+                    c->idx = nx;
+                } else {
+                    if (c->level == 0)
+                        return -1;
+                    else -- c->level;
+                }
+            }
+        }
     }
 }
 
