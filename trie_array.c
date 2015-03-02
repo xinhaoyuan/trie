@@ -17,7 +17,7 @@ typedef struct trie_cursor_s {
     unsigned idx;
 } trie_cursor_s;
 
-void ta_create(trie_s *ta, const char **strings, void **values, unsigned size) {
+void trie_create(trie_s *ta, const char **strings, void **values, unsigned size) {
     unsigned *weight   = malloc(sizeof(unsigned) * size);
 
     ta->size    = size;
@@ -87,13 +87,13 @@ void ta_create(trie_s *ta, const char **strings, void **values, unsigned size) {
     ta->cp      = cp;
 }
 
-void ta_traverse_init(trie_s *ta, trie_cursor_s *c) {
+void trie_traverse_init(trie_s *ta, trie_cursor_s *c) {
     c->level = ta->size > 1 ? ta->weight[1] - 1 : 0;
     c->pos = 0;
     c->idx = 0;
 }
 
-int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
+int trie_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
     char _ch = ta->strings[c->idx][c->pos];
     if (_ch == ch) {
         ++ c->pos;
@@ -160,11 +160,11 @@ int ta_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
     }
 }
 
-void *ta_get_value(struct trie_s *ta, struct trie_cursor_s *c) {
+void *trie_get_value(struct trie_s *ta, struct trie_cursor_s *c) {
     return ta->values[c->idx];
 }
 
-void ta_destroy(trie_s *ta) {
+void trie_destroy(trie_s *ta) {
     free(ta->weight);
     free(ta->cp);
 }
