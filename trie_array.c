@@ -134,7 +134,7 @@ int trie_traverse(trie_s *ta, trie_cursor_s *c, char ch) {
             /* failed if cannot move further */
             if (c->idx == 0) return -1;
 
-            unsigned nx = c->idx - (1 << c->level);
+            unsigned nx = (c->idx - 1) & ~(unsigned)((1 << c->level) - 1);
             
             if (ta->cp[ta->weight[nx] + c->level] < c->pos) {
                 /* imply new_string is smaller */
